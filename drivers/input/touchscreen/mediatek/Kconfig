@@ -211,6 +211,7 @@ config TOUCHSCREEN_LGE_FT8707
 
 config TOUCHSCREEN_MTK_GSLX68X
        bool "MTK_GSLX68X for Mediatek package"
+       depends on I2C && HW_MODULE_INFO
        default n
        help
          Say Y here if you have MTK_GSLX68X touch panel.

@@ -4,6 +4,10 @@
 
 menu "Misc devices"
 
+config HW_MODULE_INFO
+        bool "TYD, hardware info"
+        default y
+
 config SENSORS_LIS3LV02D
 	tristate
 	depends on INPUT
