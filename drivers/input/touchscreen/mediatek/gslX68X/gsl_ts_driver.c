@@ -1098,7 +1098,7 @@ static void gsl_quit_doze(struct gsl_ts_data *ts)
 #if 0
 	gsl_reset_core(ddata->client);
 	temp = ARRAY_SIZE(GSLX68X_FW_CONFIG);
-	//gsl_load_fw();
+	gsl_load_fw();
 	gsl_load_fw(ddata->client,GSLX68X_FW_CONFIG,temp);
 	gsl_start_core(ddata->client);
 #endif
