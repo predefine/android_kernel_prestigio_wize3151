@@ -51,13 +51,13 @@ static struct regulator *lcm_vgp;
 
 void lcm_request_gpio_control(struct device *dev)
 {
-	GPIO_LCD_RST = of_get_named_gpio(dev->of_node, "gpio_lcd_rst", 0);
+	GPIO_LCD_RST = of_get_named_gpio(dev->of_node, "gpio_lcm_rst", 0);
 	gpio_request(GPIO_LCD_RST, "GPIO_LCD_RST");
 	GPIO_LCD_PWR_ENP = of_get_named_gpio(dev->of_node,
-		"gpio_lcd_pwr_enp", 0);
+		"gpio_lcm_pwr", 0);
 	gpio_request(GPIO_LCD_PWR_ENP, "GPIO_LCD_PWR_ENP");
 	GPIO_LCD_PWR_ENN = of_get_named_gpio(dev->of_node,
-		"gpio_lcd_pwr_enn", 0);
+		"gpio_lcm_bl", 0);
 	gpio_request(GPIO_LCD_PWR_ENN, "GPIO_LCD_PWR_ENN");
 }
 
@@ -152,7 +152,7 @@ static int lcm_driver_probe(struct device *dev, void const *data)
 
 static const struct of_device_id lcm_platform_of_match[] = {
 	{
-		.compatible = "jd,jd9366",
+		.compatible = "mediatek,mt6580-lcm",
 		.data = 0,
 	}, {
 		/* sentinel */
@@ -175,7 +175,7 @@ static int lcm_platform_probe(struct platform_device *pdev)
 static struct platform_driver lcm_driver = {
 	.probe = lcm_platform_probe,
 	.driver = {
-		.name = "jd9366",
+		.name = "lcm",
 		.of_match_table = lcm_platform_of_match,
 	},
 };
@@ -920,7 +920,7 @@ LCM_DRIVER k710_hz_jd9366_boe_wxga_ips_101_lcm_drv = {
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params     = lcm_get_params,
 	.init           = lcm_init,
-	.init_power	    = lcm_init_power,
+	.init_power     = lcm_init_power,
 	.resume         = lcm_resume,
 	.resume_power	= lcm_resume_power,
 	.suspend        = lcm_suspend,
