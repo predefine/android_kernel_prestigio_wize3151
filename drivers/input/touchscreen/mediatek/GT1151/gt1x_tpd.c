@@ -47,13 +47,16 @@ DEFINE_MUTEX(tui_lock);
 int tpd_halt = 0;
 static int tpd_eint_mode = 1;
 static struct task_struct *thread;
-static struct task_struct *update_thread;
 static struct task_struct *probe_thread;
-static struct notifier_block pm_notifier_block;
 static int tpd_polling_time = 50;
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
 static DECLARE_WAIT_QUEUE_HEAD(pm_waiter);
 static bool gtp_suspend;
+
+#ifdef CONFIG_GTP_AUTO_UPDATE
+static struct task_struct *update_thread;
+static struct notifier_block pm_notifier_block;
+#endif
 
 DECLARE_WAIT_QUEUE_HEAD(init_waiter);
 DEFINE_MUTEX(i2c_access);
@@ -531,7 +534,7 @@ void gt1x_auto_update_done(void)
 	tpd_pm_flag = 1;
 	wake_up_interruptible(&pm_waiter);
 }
-#if CONFIG_GTP_AUTO_UPDATE
+#ifdef CONFIG_GTP_AUTO_UPDATE
 int gt1x_pm_notifier(struct notifier_block *nb, unsigned long val, void *ign)
 {
 	switch (val) {
