@@ -851,26 +851,25 @@ static void lcm_init_power(void)
 {
 	pr_notice("[Kernel/LCM] %s enter\n", __func__);
 
-	lcm_vgp_supply_enable();
-	MDELAY(20);
 	lcm_set_gpio_output(GPIO_LCD_PWR_ENP, GPIO_OUT_ONE);
-	MDELAY(10);
+	MDELAY(50);
 	lcm_set_gpio_output(GPIO_LCD_PWR_ENN, GPIO_OUT_ONE);
-	MDELAY(10);
-
+	MDELAY(30);
+	lcm_vgp_supply_enable();
+	MDELAY(50);
 	lcm_set_gpio_output(GPIO_LCD_RST, GPIO_OUT_ONE);
-	MDELAY(10);
+	MDELAY(50);
 	lcm_set_gpio_output(GPIO_LCD_RST, GPIO_OUT_ZERO);
-	MDELAY(2);
+	MDELAY(50);
 	lcm_set_gpio_output(GPIO_LCD_RST, GPIO_OUT_ONE);
-	MDELAY(5);
+	MDELAY(80);
 }
 
 static void lcm_resume_power(void)
 {
 	pr_notice("[Kernel/LCM] %s enter\n", __func__);
 
-	lcm_vgp_supply_enable();
+	/*lcm_vgp_supply_enable();
 	lcm_set_gpio_output(GPIO_LCD_PWR_ENP, GPIO_OUT_ONE);
 	MDELAY(1);
 	lcm_set_gpio_output(GPIO_LCD_PWR_ENN, GPIO_OUT_ONE);
@@ -881,7 +880,8 @@ static void lcm_resume_power(void)
 	lcm_set_gpio_output(GPIO_LCD_RST, GPIO_OUT_ZERO);
 	MDELAY(2);
 	lcm_set_gpio_output(GPIO_LCD_RST, GPIO_OUT_ONE);
-	MDELAY(5);
+	MDELAY(5);*/
+	lcm_init_power();
 }
 
 static void lcm_suspend(void)
