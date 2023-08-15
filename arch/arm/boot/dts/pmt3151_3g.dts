@@ -1066,7 +1066,7 @@
 			mediatek,kpd-hw-recovery-key = <0x0>;
 			mediatek,kpd-hw-rstkey = <0x11>;
 			mediatek,kpd-key-debounce = <0x400>;
-			mediatek,kpd-pwkey-gpio-din = <0x0>;
+			mediatek,kpd-pwrkey-gpio-din = <0x0>;
 			mediatek,kpd-pwrkey-eint-gpio = <0x0>;
 			mediatek,kpd-sw-pwrkey = <0x74>;
 			mediatek,kpd-sw-rstkey = <0x72>;
