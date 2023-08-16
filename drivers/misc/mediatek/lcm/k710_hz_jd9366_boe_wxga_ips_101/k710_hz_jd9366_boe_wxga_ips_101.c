@@ -916,7 +916,7 @@ static void lcm_suspend_power(void)
 }
 
 LCM_DRIVER k710_hz_jd9366_boe_wxga_ips_101_lcm_drv = {
-	.name			= "1-k710_hz_jd9366_boe_wxga_ips_101",
+	.name			= "k710_hz_jd9366_boe_wxga_ips_101",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params     = lcm_get_params,
 	.init           = lcm_init,
