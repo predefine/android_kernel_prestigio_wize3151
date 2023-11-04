@@ -17,6 +17,8 @@
 
 #define PMIC_DEBUG
 
+#define KPD_PMIC_RSTKEY_MAP KEY_VOLUMEUP
+
 /*
  * The CHIP INFO
  */

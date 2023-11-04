@@ -14,6 +14,10 @@
 #ifndef KPD_HAL_H
 #define KPD_HAL_H
 #include <mt-plat/sync_write.h>
+/* Keypad rst key */
+
+#define KPD_PMIC_RSTKEY_MAP KEY_VOLUMEUP
+
 /* Keypad registers */
 extern void __iomem *kp_base;
 
