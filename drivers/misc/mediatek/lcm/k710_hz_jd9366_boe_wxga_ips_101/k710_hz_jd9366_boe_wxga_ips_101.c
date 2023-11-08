@@ -208,6 +208,19 @@ module_exit(lcm_drv_exit);
 MODULE_AUTHOR("mediatek");
 MODULE_DESCRIPTION("Display subsystem Driver");
 MODULE_LICENSE("GPL");
+#else
+// VGP3 control via pmic
+int lcm_vgp_supply_disable(void)
+{
+	pmic_set_register_value(PMIC_RG_VGP3_VOSEL, 0);
+	pmic_set_register_value(PMIC_RG_VGP3_EN, 0);
+	return 0;
+}
+int lcm_vgp_supply_enable(void){
+	pmic_set_register_value(PMIC_RG_VGP3_VOSEL, 3);
+	pmic_set_register_value(PMIC_RG_VGP3_EN, 1);
+	return 0;
+}
 #endif
 
 
@@ -249,7 +262,7 @@ static LCM_UTIL_FUNCS lcm_util = { 0 };
 		 (lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size))
 
 
-enum LCM_CMD_TYPE { LCM_SET_CMDQ, LCM_MDELAY, LCM_END };
+enum LCM_CMD_TYPE { LCM_SET_CMDQ, LCM_MDELAY, LCM_GPIO, LCM_VGP_CTRL, LCM_END };
 
 struct _LCM_CMD{
 	enum LCM_CMD_TYPE type;
@@ -262,17 +275,18 @@ typedef LCM_CMD LCM_CMD_TABLE[];
 
 
 static LCM_CMD_TABLE lcm_init_table = {
-/*	{LCM_GPIO, 0xb << 1 | 1},
+	{LCM_GPIO, GPIO_LCD_ENN << 1 | 1},
 	{LCM_MDELAY, 50},
-	{LCM_GPIO, 0xc << 1 | 1},
+	{LCM_GPIO, GPIO_LCD_ENP << 1 | 1},
+	{LCM_VGP_CTRL, 1},
 	{LCM_MDELAY, 30},
 	{LCM_MDELAY, 0x32},
-	{LCM_GPIO, 0x46 << 1 | 1},
+	{LCM_GPIO, GPIO_LCM_RST << 1 | 1},
 	{LCM_MDELAY, 0x32},
-	{LCM_GPIO, 0x46 << 1 | 0},
+	{LCM_GPIO, GPIO_LCM_RST << 1 | 0},
 	{LCM_MDELAY, 0x32},
-	{LCM_GPIO, 0x46 << 1 | 1},
-	{LCM_MDELAY, 80},*/
+	{LCM_GPIO, GPIO_LCM_RST << 1 | 1},
+	{LCM_MDELAY, 80},
 	{LCM_SET_CMDQ, 0xe01500},
 	{LCM_MDELAY, 1},
 	{LCM_SET_CMDQ, 0x93e11500},
@@ -614,16 +628,24 @@ static LCM_CMD_TABLE lcm_init_table = {
 	{LCM_SET_CMDQ, 0x290500},
 	{LCM_MDELAY, 20},
 	{LCM_MDELAY, 100},
-//	{LCM_GPIO, 0xc << 1 | 1},
+	{LCM_GPIO, GPIO_LCD_ENN << 1 | 1},
 	{LCM_END, 0}
 };
 
-
-static LCM_CMD_TABLE suspend_table = {
+static LCM_CMD_TABLE lcm_suspend_table = {
+	{LCM_GPIO, GPIO_LCD_ENN << 1 | 0},
+	{LCM_MDELAY, 250},
 	{LCM_SET_CMDQ, 0x00280500},
 	{LCM_MDELAY, 5},
 	{LCM_SET_CMDQ, 0x00100500},
 	{LCM_MDELAY, 5},
+	{LCM_GPIO, GPIO_LCM_RST << 1 | 0},
+	{LCM_MDELAY, 10},
+	{LCM_GPIO, GPIO_LCD_ENP << 1 | 0},
+	{LCM_MDELAY, 20},
+	{LCM_GPIO, GPIO_LCD_ENN << 1 | 0},
+	{LCM_VGP_CTRL, 0},
+	{LCM_MDELAY, 80},
 	{LCM_END, 0}
 };
 
@@ -653,7 +675,7 @@ void push_table(LCM_CMD_TABLE table){
 				dtable[0] = cmd.data;
 				dsi_set_cmdq(dtable, 1, 1);
 				break;
-			/*case LCM_GPIO:
+			case LCM_GPIO:
 				// custom format
 				// 0baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab
 				// a - gpio num
@@ -665,42 +687,24 @@ void push_table(LCM_CMD_TABLE table){
 					SET_GPIO_OUT(
 						cmd.data >> 1,
 						(int)(cmd.data & 1));
-				break;*/
+				break;
+			case LCM_VGP_CTRL:
+				// 0 - disable
+				// 1 - enable
+				if (cmd.data)
+					lcm_vgp_supply_enable();
+				else
+					lcm_vgp_supply_disable();
+				break;
 			default:
 				break;
 		}
 	}
 }
 
-#define lcm_power_en(v) lcm_set_gpio_output(GPIO_LCD_ENP, v)
+/*#define lcm_power_en(v) lcm_set_gpio_output(GPIO_LCD_ENP, v)
 #define lcm_bl_en(v) lcm_set_gpio_output(GPIO_LCD_ENN, v)
-#define lcm_rst(v) lcm_set_gpio_output(GPIO_LCM_RST, v)
-
-static void init_karnak_fiti_kd_lcm(void)
-{
-	lcm_power_en(1);
-        MDELAY(50);
-	lcm_bl_en(1);
-#ifdef BUILD_LK
-	pmic_set_register_value(PMIC_RG_VGP3_VOSEL, 3);
-	pmic_set_register_value(PMIC_RG_VGP3_EN, 1);
-#else
-	lcm_vgp_supply_enable();
-#endif
-        MDELAY(30);
-	lcm_set_gpio_output(0xffffffff,1);
-	MDELAY(50);
-	lcm_rst(1);
-        MDELAY(50);
-	lcm_rst(0);
-        MDELAY(50);
-	lcm_rst(1);
-        MDELAY(80);
-
-	push_table(lcm_init_table);
-
-	lcm_bl_en(1);
-}
+#define lcm_rst(v) lcm_set_gpio_output(GPIO_LCM_RST, v)*/
 
 
 /* ----------------------------------------------------------------- */
@@ -735,37 +739,17 @@ static void lcm_get_params(LCM_PARAMS *params)
 
 static void lcm_init(void)
 {
-	pr_notice("[Kernel/LCM] %s enter\n", __func__);
-
-	init_karnak_fiti_kd_lcm();
+	push_table(lcm_init_table);
 }
 
 static void lcm_resume(void)
 {
-	pr_notice("[Kernel/LCM] %s enter\n", __func__);
-	init_karnak_fiti_kd_lcm();
-
+	push_table(lcm_init_table);
 }
-
-
 
 static void lcm_suspend(void)
 {
-	lcm_bl_en(0);
-	MDELAY(250);
-	push_table(suspend_table);
-	lcm_rst(0);
-	MDELAY(10);
-	lcm_power_en(0);
-	MDELAY(20);
-	lcm_bl_en(0);
-#ifdef BUILD_LK
-	pmic_set_register_value(PMIC_RG_VGP3_VOSEL, 0);
-	pmic_set_register_value(PMIC_RG_VGP3_EN, 0);
-#else
-	lcm_vgp_supply_disable();
-#endif
-	MDELAY(80);
+	push_table(lcm_suspend_table);
 }
 
 LCM_DRIVER k710_hz_jd9366_boe_wxga_ips_101_lcm_drv = {
